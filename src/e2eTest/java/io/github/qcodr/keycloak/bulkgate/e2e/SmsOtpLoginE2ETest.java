@@ -109,6 +109,12 @@ class SmsOtpLoginE2ETest {
             HtmlPage otpPage = submitPassword(web);
             assertThat(otpPage.getElementById("code")).as("OTP form should be shown").isNotNull();
 
+            // Guard the instruction line: the TTL must render as a number, not a
+            // leaked FreeMarker formatter object.
+            String otpText = otpPage.asNormalizedText();
+            assertThat(otpText).doesNotContain("freemarker", "NumberFormatter");
+            assertThat(otpText).containsPattern("valid for \\d+ minutes");
+
             String code = latestSentCode();
             org.htmlunit.Page result = submitCode(otpPage, code);
 

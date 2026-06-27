@@ -3,7 +3,7 @@
     <#if section = "header">
         ${msg("bulkgateFormTitle")}
     <#elseif section = "form">
-        <p class="instruction">${msg("bulkgateInstruction", (ttlMinutes!5)?string)}</p>
+        <p class="instruction">${msg("bulkgateInstruction", (ttlMinutes!5)?c)}</p>
 
         <form id="kc-sms-otp-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <div class="${properties.kcFormGroupClass!}">
