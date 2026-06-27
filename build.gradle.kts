@@ -85,7 +85,10 @@ dependencies {
     // Keycloak APIs are compileOnly for main; tests that touch SPI types need them.
     testImplementation("org.keycloak:keycloak-server-spi:$keycloakVersion")
     testImplementation("org.keycloak:keycloak-server-spi-private:$keycloakVersion")
+    testImplementation("org.keycloak:keycloak-services:$keycloakVersion")
     testImplementation("org.keycloak:keycloak-core:$keycloakVersion")
+    testImplementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
+    testImplementation("org.jboss.logging:jboss-logging:3.6.3.Final")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
 
