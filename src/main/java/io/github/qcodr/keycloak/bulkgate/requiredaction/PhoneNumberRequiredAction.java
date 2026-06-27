@@ -56,6 +56,8 @@ public class PhoneNumberRequiredAction implements RequiredActionProvider {
             PhoneNumber phone = normalizer.normalize(raw);
             UserModel user = context.getUser();
             user.setSingleAttribute(ConfigKeys.DEFAULT_PHONE_NUMBER_ATTRIBUTE, phone.e164());
+            // A freshly entered number is not yet proven; the OTP step verifies it.
+            user.setSingleAttribute(ConfigKeys.DEFAULT_PHONE_NUMBER_VERIFIED_ATTRIBUTE, "false");
             context.success();
         } catch (InvalidPhoneNumberException e) {
             Response form = context.form()

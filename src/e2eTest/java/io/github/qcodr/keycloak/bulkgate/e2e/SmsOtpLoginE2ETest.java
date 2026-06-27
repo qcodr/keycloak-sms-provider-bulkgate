@@ -121,6 +121,11 @@ class SmsOtpLoginE2ETest {
             assertThat(result.getUrl().toString())
                     .as("successful login redirects back with an authorization code")
                     .contains("code=");
+
+            // A successful OTP stamps the standard phone-verified attribute.
+            assertThat(userAttribute(USERNAME, "phoneNumberVerified"))
+                    .as("phone marked verified after successful OTP")
+                    .isEqualTo("true");
         }
     }
 
@@ -253,7 +258,7 @@ class SmsOtpLoginE2ETest {
         user.setFirstName("Alice");
         user.setLastName("Test");
         user.setCredentials(List.of(password));
-        user.setAttributes(Map.of("mobile_number", List.of(PHONE)));
+        user.setAttributes(Map.of("phoneNumber", List.of(PHONE)));
         realm.users().create(user).close();
     }
 
@@ -309,8 +314,26 @@ class SmsOtpLoginE2ETest {
         config.put("maxVerifyAttempts", "3");
         config.put("resendCooldownSeconds", "1");
         config.put("maxResends", "3");
-        config.put("phoneNumberAttribute", "mobile_number");
+        config.put("phoneNumberAttribute", "phoneNumber");
         config.put("defaultCountryCode", "+36");
         return config;
+    }
+
+    /** Reads a single user attribute via a short-lived admin client. */
+    private static String userAttribute(String username, String attribute) {
+        try (Keycloak admin = KeycloakBuilder.builder()
+                .serverUrl(KEYCLOAK.getAuthServerUrl())
+                .realm("master")
+                .clientId("admin-cli")
+                .username(KEYCLOAK.getAdminUsername())
+                .password(KEYCLOAK.getAdminPassword())
+                .build()) {
+            UserRepresentation user = admin.realm(REALM).users().search(username).get(0);
+            Map<String, List<String>> attrs = user.getAttributes();
+            if (attrs == null || attrs.get(attribute) == null || attrs.get(attribute).isEmpty()) {
+                return null;
+            }
+            return attrs.get(attribute).get(0);
+        }
     }
 }

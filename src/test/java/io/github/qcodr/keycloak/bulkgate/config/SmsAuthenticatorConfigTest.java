@@ -21,7 +21,9 @@ class SmsAuthenticatorConfigTest {
         assertThat(config.codeLength()).isEqualTo(ConfigKeys.DEFAULT_CODE_LENGTH);
         assertThat(config.codeTtl()).isEqualTo(Duration.ofSeconds(ConfigKeys.DEFAULT_CODE_TTL_SECONDS));
         assertThat(config.maxVerifyAttempts()).isEqualTo(ConfigKeys.DEFAULT_MAX_VERIFY_ATTEMPTS);
-        assertThat(config.phoneNumberAttribute()).isEqualTo(ConfigKeys.DEFAULT_PHONE_NUMBER_ATTRIBUTE);
+        assertThat(config.phoneNumberAttribute()).isEqualTo("phoneNumber");
+        assertThat(config.phoneNumberVerifiedAttribute()).isEqualTo("phoneNumberVerified");
+        assertThat(config.markPhoneVerified()).isTrue();
         assertThat(config.defaultCountryCode()).isEqualTo(ConfigKeys.DEFAULT_COUNTRY_CODE_VALUE);
         assertThat(config.simulationMode()).isFalse();
         assertThat(config.bulkGate().apiUrl()).isEqualTo("https://portal.bulkgate.com/api/1.0/advanced/transactional");
@@ -43,6 +45,8 @@ class SmsAuthenticatorConfigTest {
         raw.put(ConfigKeys.RESEND_COOLDOWN_SECONDS, "15");
         raw.put(ConfigKeys.MAX_RESENDS, "2");
         raw.put(ConfigKeys.PHONE_NUMBER_ATTRIBUTE, "phone");
+        raw.put(ConfigKeys.PHONE_NUMBER_VERIFIED_ATTRIBUTE, "phoneVerified");
+        raw.put(ConfigKeys.MARK_PHONE_VERIFIED, "false");
         raw.put(ConfigKeys.DEFAULT_COUNTRY_CODE, "+49");
         raw.put(ConfigKeys.SIMULATION_MODE, "true");
         raw.put(ConfigKeys.BULKGATE_APPLICATION_ID, "app-1");
@@ -58,6 +62,8 @@ class SmsAuthenticatorConfigTest {
         assertThat(config.resendCooldown()).isEqualTo(Duration.ofSeconds(15));
         assertThat(config.maxResends()).isEqualTo(2);
         assertThat(config.phoneNumberAttribute()).isEqualTo("phone");
+        assertThat(config.phoneNumberVerifiedAttribute()).isEqualTo("phoneVerified");
+        assertThat(config.markPhoneVerified()).isFalse();
         assertThat(config.defaultCountryCode()).isEqualTo("+49");
         assertThat(config.simulationMode()).isTrue();
         assertThat(config.bulkGate().applicationId()).isEqualTo("app-1");

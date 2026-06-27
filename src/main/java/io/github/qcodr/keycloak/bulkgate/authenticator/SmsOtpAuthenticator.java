@@ -194,6 +194,7 @@ public class SmsOtpAuthenticator implements Authenticator {
         switch (result) {
             case VALID -> {
                 challengeStore.clear(authSession);
+                markPhoneVerified(context, config);
                 context.success();
             }
             case INVALID -> onInvalidCode(context, config, authSession, challenge);
@@ -205,6 +206,16 @@ public class SmsOtpAuthenticator implements Authenticator {
             }
             case NO_CHALLENGE ->
                     failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_INTERNAL, Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Records that the phone number is now proven, so the standard OIDC
+     * {@code phone_number_verified} claim (and conditional flows) can rely on it.
+     */
+    private void markPhoneVerified(AuthenticationFlowContext context, SmsAuthenticatorConfig config) {
+        if (config.markPhoneVerified()) {
+            context.getUser().setSingleAttribute(config.phoneNumberVerifiedAttribute(), "true");
         }
     }
 

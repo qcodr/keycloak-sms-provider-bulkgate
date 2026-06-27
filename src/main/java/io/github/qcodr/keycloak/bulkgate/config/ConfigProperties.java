@@ -49,8 +49,16 @@ public final class ConfigProperties {
 
                 // --- Phone number ---
                 string(ConfigKeys.PHONE_NUMBER_ATTRIBUTE, "Phone number attribute",
-                        "User attribute holding the mobile number.",
+                        "User attribute holding the phone number. Defaults to 'phoneNumber', which "
+                                + "Keycloak's built-in OIDC 'phone' scope maps to the phone_number claim.",
                         ConfigKeys.DEFAULT_PHONE_NUMBER_ATTRIBUTE),
+                string(ConfigKeys.PHONE_NUMBER_VERIFIED_ATTRIBUTE, "Phone verified attribute",
+                        "User attribute set to true after a successful SMS verification; maps to the "
+                                + "phone_number_verified claim.",
+                        ConfigKeys.DEFAULT_PHONE_NUMBER_VERIFIED_ATTRIBUTE),
+                bool(ConfigKeys.MARK_PHONE_VERIFIED, "Mark phone verified on success",
+                        "When on, a successful OTP sets the phone-verified attribute to true.",
+                        ConfigKeys.DEFAULT_MARK_PHONE_VERIFIED),
                 string(ConfigKeys.DEFAULT_COUNTRY_CODE, "Default country code",
                         "Dialing code applied to numbers stored without an international prefix (e.g. +36).",
                         ConfigKeys.DEFAULT_COUNTRY_CODE_VALUE),

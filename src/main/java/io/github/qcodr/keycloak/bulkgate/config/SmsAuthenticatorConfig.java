@@ -22,6 +22,8 @@ public record SmsAuthenticatorConfig(
         Duration resendCooldown,
         int maxResends,
         String phoneNumberAttribute,
+        String phoneNumberVerifiedAttribute,
+        boolean markPhoneVerified,
         String defaultCountryCode,
         boolean simulationMode,
         String smsTextTemplate,
@@ -50,6 +52,8 @@ public record SmsAuthenticatorConfig(
         int maxResends = nonNegative(config, ConfigKeys.MAX_RESENDS, ConfigKeys.DEFAULT_MAX_RESENDS);
 
         String phoneAttr = stringValue(config, ConfigKeys.PHONE_NUMBER_ATTRIBUTE, ConfigKeys.DEFAULT_PHONE_NUMBER_ATTRIBUTE);
+        String phoneVerifiedAttr = stringValue(config, ConfigKeys.PHONE_NUMBER_VERIFIED_ATTRIBUTE, ConfigKeys.DEFAULT_PHONE_NUMBER_VERIFIED_ATTRIBUTE);
+        boolean markVerified = boolValue(config, ConfigKeys.MARK_PHONE_VERIFIED, ConfigKeys.DEFAULT_MARK_PHONE_VERIFIED);
         String countryCode = stringValue(config, ConfigKeys.DEFAULT_COUNTRY_CODE, ConfigKeys.DEFAULT_COUNTRY_CODE_VALUE);
         boolean simulation = boolValue(config, ConfigKeys.SIMULATION_MODE, ConfigKeys.DEFAULT_SIMULATION_MODE);
         String template = stringValue(config, ConfigKeys.SMS_TEXT_TEMPLATE, ConfigKeys.DEFAULT_SMS_TEXT_TEMPLATE);
@@ -71,6 +75,8 @@ public record SmsAuthenticatorConfig(
                 Duration.ofSeconds(resendCooldown),
                 maxResends,
                 phoneAttr,
+                phoneVerifiedAttr,
+                markVerified,
                 countryCode,
                 simulation,
                 template,

@@ -24,6 +24,8 @@ public final class ConfigKeys {
 
     // --- Phone number -------------------------------------------------------
     public static final String PHONE_NUMBER_ATTRIBUTE = "phoneNumberAttribute";
+    public static final String PHONE_NUMBER_VERIFIED_ATTRIBUTE = "phoneNumberVerifiedAttribute";
+    public static final String MARK_PHONE_VERIFIED = "markPhoneVerified";
     public static final String DEFAULT_COUNTRY_CODE = "defaultCountryCode";
 
     // --- BulkGate gateway ---------------------------------------------------
@@ -42,7 +44,11 @@ public final class ConfigKeys {
     public static final int DEFAULT_MAX_VERIFY_ATTEMPTS = 3;
     public static final int DEFAULT_RESEND_COOLDOWN_SECONDS = 30;
     public static final int DEFAULT_MAX_RESENDS = 3;
-    public static final String DEFAULT_PHONE_NUMBER_ATTRIBUTE = "mobile_number";
+    // Aligns with Keycloak's built-in OIDC "phone" client scope, whose mappers
+    // read user attributes phoneNumber / phoneNumberVerified.
+    public static final String DEFAULT_PHONE_NUMBER_ATTRIBUTE = "phoneNumber";
+    public static final String DEFAULT_PHONE_NUMBER_VERIFIED_ATTRIBUTE = "phoneNumberVerified";
+    public static final boolean DEFAULT_MARK_PHONE_VERIFIED = true;
     public static final String DEFAULT_COUNTRY_CODE_VALUE = "+36";
     public static final boolean DEFAULT_SIMULATION_MODE = false;
     public static final String DEFAULT_SMS_TEXT_TEMPLATE =
