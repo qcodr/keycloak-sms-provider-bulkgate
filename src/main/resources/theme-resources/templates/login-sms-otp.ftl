@@ -1,36 +1,30 @@
 <#import "template.ftl" as layout>
+<#import "field.ftl" as field>
+<#import "buttons.ftl" as buttons>
 <@layout.registrationLayout displayMessage=true; section>
     <#if section = "header">
         ${msg("bulkgateFormTitle")}
     <#elseif section = "form">
-        <p class="instruction">${msg("bulkgateInstruction", (ttlMinutes!5)?c)}</p>
+        <div id="kc-form">
+            <div id="kc-form-wrapper">
+                <p id="kc-sms-otp-instruction" class="${properties.kcInputHelperTextClass!} pf-v5-u-mb-md">
+                    ${msg("bulkgateInstruction", (ttlMinutes!5)?c)}
+                </p>
 
-        <form id="kc-sms-otp-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="code" class="${properties.kcLabelClass!}">${msg("bulkgateCodeLabel")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="code" name="code" autocomplete="one-time-code"
-                           inputmode="numeric" pattern="[0-9]*"
-                           class="${properties.kcInputClass!}" autofocus aria-required="true"/>
-                </div>
-            </div>
+                <form id="kc-sms-otp-login-form" class="${properties.kcFormClass!}"
+                      onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                           type="submit" value="${msg("bulkgateSubmit")}"/>
-                </div>
-            </div>
-        </form>
+                    <@field.input name="code" label=msg("bulkgateCodeLabel")
+                        autocomplete="one-time-code" autofocus=true error="" />
 
-        <form id="kc-sms-otp-resend-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
-            <input type="hidden" name="resend" value="true"/>
-            <div class="${properties.kcFormGroupClass!}">
-                <input class="${properties.kcButtonClass!} ${properties.kcButtonDefaultClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                       type="submit" value="${msg("bulkgateResend")}"/>
+                    <@buttons.actionGroup>
+                        <@buttons.button id="kc-login" name="login" label="bulkgateSubmit"
+                            class=["kcButtonPrimaryClass", "kcButtonBlockClass"] />
+                        <@buttons.button id="kc-sms-otp-resend" name="resend" label="bulkgateResend"
+                            class=["kcButtonSecondaryClass", "kcButtonBlockClass"] value="true" />
+                    </@buttons.actionGroup>
+                </form>
             </div>
-        </form>
+        </div>
     </#if>
 </@layout.registrationLayout>

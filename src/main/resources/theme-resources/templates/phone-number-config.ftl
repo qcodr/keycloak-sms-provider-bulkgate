@@ -1,27 +1,28 @@
 <#import "template.ftl" as layout>
+<#import "field.ftl" as field>
+<#import "buttons.ftl" as buttons>
 <@layout.registrationLayout displayMessage=true; section>
     <#if section = "header">
         ${msg("bulkgatePhoneFormTitle")}
     <#elseif section = "form">
-        <p class="instruction">${msg("bulkgatePhoneInstruction")}</p>
+        <div id="kc-form">
+            <div id="kc-form-wrapper">
+                <p id="kc-bulkgate-phone-instruction" class="${properties.kcInputHelperTextClass!} pf-v5-u-mb-md">
+                    ${msg("bulkgatePhoneInstruction")}
+                </p>
 
-        <form id="kc-bulkgate-phone-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="mobileNumber" class="${properties.kcLabelClass!}">${msg("bulkgatePhoneLabel")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="tel" id="mobileNumber" name="mobileNumber" value="${(mobileNumber!'')}"
-                           class="${properties.kcInputClass!}" autofocus aria-required="true"/>
-                </div>
-            </div>
+                <form id="kc-bulkgate-phone-form" class="${properties.kcFormClass!}"
+                      onsubmit="submit.disabled = true; return true;" action="${url.loginAction}" method="post">
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                           type="submit" value="${msg("bulkgateSubmit")}"/>
-                </div>
+                    <@field.input name="mobileNumber" label=msg("bulkgatePhoneLabel")
+                        value=(mobileNumber!'') autocomplete="tel" autofocus=true error="" />
+
+                    <@buttons.actionGroup>
+                        <@buttons.button id="kc-submit" name="submit" label="bulkgateSubmit"
+                            class=["kcButtonPrimaryClass", "kcButtonBlockClass"] />
+                    </@buttons.actionGroup>
+                </form>
             </div>
-        </form>
+        </div>
     </#if>
 </@layout.registrationLayout>

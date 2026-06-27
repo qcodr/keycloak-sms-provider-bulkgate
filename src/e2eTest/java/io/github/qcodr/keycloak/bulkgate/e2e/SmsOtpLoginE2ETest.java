@@ -157,9 +157,8 @@ class SmsOtpLoginE2ETest {
 
     private org.htmlunit.Page submitCode(HtmlPage otpPage, String code) throws Exception {
         ((HtmlInput) otpPage.getElementById("code")).setValue(code);
-        HtmlForm form = (HtmlForm) otpPage.getElementById("kc-sms-otp-login-form");
-        HtmlElement submit = form.getElementsByAttribute("input", "type", "submit").get(0);
-        return submit.click();
+        // The submit is a PF5 <button id="kc-login">, rendered by the buttons.ftl macro.
+        return ((HtmlElement) otpPage.getElementById("kc-login")).click();
     }
 
     private String authorizationUrl() {
