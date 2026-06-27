@@ -53,9 +53,11 @@ public final class ConfigProperties {
                         Integer.toString(ConfigKeys.DEFAULT_MAX_RESENDS)),
                 text(
                         ConfigKeys.SMS_TEXT_TEMPLATE,
-                        "SMS text template",
-                        "Message body. Placeholders: %code% and %ttl% (validity in minutes).",
-                        ConfigKeys.DEFAULT_SMS_TEXT_TEMPLATE),
+                        "SMS text template (override)",
+                        "Leave blank to use the per-locale message bundle (bulkgateSmsText), so the SMS"
+                                + " matches the user's language. Set a value to override with one fixed text."
+                                + " Placeholders: %code% and %ttl% (validity in minutes).",
+                        ""),
 
                 // --- Phone number ---
                 string(

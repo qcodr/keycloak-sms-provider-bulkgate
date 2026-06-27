@@ -24,11 +24,11 @@ A Keycloak authenticator that sends a one-time code by SMS through
 ```mermaid
 sequenceDiagram
     actor U as User / Browser
-    participant KC as Keycloak<br/>(SmsOtpAuthenticator)
-    participant BG as BulkGate<br/>(Transactional SMS API)
+    participant KC as Keycloak (authenticator)
+    participant BG as BulkGate (SMS API)
 
     rect rgb(238, 246, 255)
-    note over U,BG: authenticate() — issue & send
+    note over U,BG: authenticate() - issue and send
     KC->>KC: read realm config
     KC->>KC: read phone from user attribute
     alt no number on file
@@ -36,20 +36,20 @@ sequenceDiagram
     end
     KC->>KC: normalise to E.164 (libphonenumber)
     KC->>KC: generate N-digit code (SecureRandom)
-    KC->>KC: store salted SHA-256 hash + expiry in auth session
+    KC->>KC: store salted SHA-256 hash and expiry in auth session
     KC->>BG: send code as SMS text
     BG-->>KC: accepted (sms_id)
     KC-->>U: show code-entry form
     end
 
     rect rgb(240, 255, 244)
-    note over U,BG: action() — verify
+    note over U,BG: action() - verify
     U->>KC: submit code
     KC->>KC: verify(code, now, maxAttempts)
     alt VALID
-        KC-->>U: success → continue login
+        KC-->>U: success, continue login
     else INVALID
-        KC-->>U: re-ask (++attempts) or lock when budget spent
+        KC-->>U: re-ask (attempt spent) or lock when budget exhausted
     else EXPIRED / TOO_MANY_ATTEMPTS / NO_CHALLENGE
         KC-->>U: fail
     end
@@ -57,7 +57,7 @@ sequenceDiagram
 
     opt Resend requested
         U->>KC: resend
-        KC->>KC: ResendPolicy — cooldown + per-session cap
+        KC->>KC: ResendPolicy - cooldown and per-session cap
         KC->>BG: send a fresh code (attempt budget carried over)
     end
 ```
@@ -86,7 +86,7 @@ your flow → the *BulkGate SMS OTP* execution → ⚙ Config).
 | `maxVerifyAttempts` | `3` | Wrong guesses allowed **per login session** (a resend does not reset this). |
 | `resendCooldownSeconds` | `30` | Minimum delay between resends. |
 | `maxResends` | `3` | Resends allowed per login session. |
-| `smsTextTemplate` | `Your verification code is %code%. It is valid for %ttl% minutes.` | SMS body. Placeholders: `%code%`, `%ttl%`. |
+| `smsTextTemplate` | _(blank)_ | SMS body **override**. Leave blank to use the per-locale `bulkgateSmsText` message (the SMS then matches the user's language). Set a value to force one fixed text. Placeholders: `%code%`, `%ttl%`. |
 | `phoneNumberAttribute` | `phoneNumber` | User attribute holding the number. The default maps to Keycloak's built-in OIDC `phone_number` claim. |
 | `phoneNumberVerifiedAttribute` | `phoneNumberVerified` | Attribute set to `true` after a successful OTP; maps to the `phone_number_verified` claim. |
 | `markPhoneVerified` | `true` | Whether a successful OTP stamps the phone-verified attribute. |
@@ -128,6 +128,11 @@ Polish, Portuguese, Romanian, Slovak, Swedish, Ukrainian. Enable the locales in
 *Realm settings → Localization*; Keycloak then shows a language switcher on the
 login pages and untranslated keys fall back to English. The demo realm enables
 all of them (default `hu`).
+
+This covers the login UI **and the SMS body itself**: when `smsTextTemplate` is
+left blank, the text comes from the per-locale `bulkgateSmsText` message resolved
+in the user's locale — so the code SMS arrives in the same language as the login
+page. Set `smsTextTemplate` only if you want one fixed text regardless of locale.
 
 ## Build
 

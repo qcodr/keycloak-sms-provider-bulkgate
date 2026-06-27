@@ -29,9 +29,11 @@ import io.github.qcodr.keycloak.bulkgate.phone.PhoneNumber;
 import io.github.qcodr.keycloak.bulkgate.requiredaction.PhoneNumberRequiredAction;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Locale;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -43,6 +45,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.theme.Theme;
 
 /**
  * SMS one-time-password authenticator. Keycloak generates the code, sends it via
@@ -60,6 +63,9 @@ public class SmsOtpAuthenticator implements Authenticator {
     private static final Logger LOG = Logger.getLogger(SmsOtpAuthenticator.class);
 
     static final String FORM = "login-sms-otp.ftl";
+    /** Message-bundle key for the localized SMS body (per-locale fallback when no override is set). */
+    static final String MSG_SMS_TEXT = "bulkgateSmsText";
+
     static final String FORM_CODE_PARAM = "code";
     static final String FORM_RESEND_PARAM = "resend";
 
@@ -156,8 +162,8 @@ public class SmsOtpAuthenticator implements Authenticator {
                 config.codeLength(), config.codeTtl(), phone.e164(), priorResends, priorAttempts);
         challengeStore.store(authSession, issued.challenge());
 
-        String text = textFormatter.format(
-                config.smsTextTemplate(), issued.plaintext().value(), config.ttlMinutes());
+        String template = resolveSmsTemplate(context, config);
+        String text = textFormatter.format(template, issued.plaintext().value(), config.ttlMinutes());
         try {
             SmsGateway gateway = gatewayResolver.resolve(config);
             SmsSendResult result = gateway.send(new SmsMessage(phone.e164(), text));
@@ -234,6 +240,31 @@ public class SmsOtpAuthenticator implements Authenticator {
                     MSG_INTERNAL,
                     Response.Status.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Resolves the SMS body template. A non-blank {@code smsTextTemplate} config value wins
+     * (a fixed override); otherwise the per-locale {@code bulkgateSmsText} message is used so
+     * the SMS matches the user's language, falling back to the built-in English text if the
+     * bundle cannot be read.
+     */
+    private String resolveSmsTemplate(AuthenticationFlowContext context, SmsAuthenticatorConfig config) {
+        if (!config.smsTextTemplate().isBlank()) {
+            return config.smsTextTemplate();
+        }
+        try {
+            KeycloakSession session = context.getSession();
+            Locale locale = session.getContext().resolveLocale(context.getUser());
+            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            String localized =
+                    theme.getEnhancedMessages(context.getRealm(), locale).getProperty(MSG_SMS_TEXT);
+            if (localized != null && !localized.isBlank()) {
+                return localized;
+            }
+        } catch (IOException e) {
+            LOG.warn("Could not load localized SMS text; using built-in default", e);
+        }
+        return ConfigKeys.DEFAULT_SMS_TEXT_TEMPLATE;
     }
 
     /**

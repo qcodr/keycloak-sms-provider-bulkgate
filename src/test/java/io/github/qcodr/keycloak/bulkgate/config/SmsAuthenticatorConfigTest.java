@@ -71,6 +71,21 @@ class SmsAuthenticatorConfigTest {
     }
 
     @Test
+    void smsTextTemplateDefaultsToEmptySoTheLocaleBundleIsUsed() {
+        SmsAuthenticatorConfig config = SmsAuthenticatorConfig.from(Map.of());
+
+        assertThat(config.smsTextTemplate()).isEmpty();
+    }
+
+    @Test
+    void smsTextTemplateOverrideIsKept() {
+        SmsAuthenticatorConfig config =
+                SmsAuthenticatorConfig.from(Map.of(ConfigKeys.SMS_TEXT_TEMPLATE, "Code: %code%"));
+
+        assertThat(config.smsTextTemplate()).isEqualTo("Code: %code%");
+    }
+
+    @Test
     void ttlMinutesRoundsUp() {
         SmsAuthenticatorConfig config = SmsAuthenticatorConfig.from(Map.of(ConfigKeys.CODE_TTL_SECONDS, "90"));
 

@@ -60,7 +60,9 @@ public record SmsAuthenticatorConfig(
         String countryCode =
                 stringValue(config, ConfigKeys.DEFAULT_COUNTRY_CODE, ConfigKeys.DEFAULT_COUNTRY_CODE_VALUE);
         boolean simulation = boolValue(config, ConfigKeys.SIMULATION_MODE, ConfigKeys.DEFAULT_SIMULATION_MODE);
-        String template = stringValue(config, ConfigKeys.SMS_TEXT_TEMPLATE, ConfigKeys.DEFAULT_SMS_TEXT_TEMPLATE);
+        // Empty by default: the SMS body is taken from the per-locale message
+        // bundle. A non-blank value here overrides it with a fixed text.
+        String template = stringValue(config, ConfigKeys.SMS_TEXT_TEMPLATE, "");
 
         BulkGateSettings bulkGate = new BulkGateSettings(
                 stringValue(config, ConfigKeys.BULKGATE_API_URL, BulkGateSettings.DEFAULT_API_URL),
