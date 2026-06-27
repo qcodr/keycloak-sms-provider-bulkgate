@@ -13,7 +13,8 @@ services:
     image: wiremock/wiremock:3.9.2
     command: ["--verbose"]
     ports:
-      - "8081:8080"
+      # Override if 8081 is taken:  WIREMOCK_HOST_PORT=8091 docker compose up
+      - "${WIREMOCK_HOST_PORT:-8081}:8080"
     volumes:
       - ./docker/wiremock/mappings:/home/wiremock/mappings:ro
     networks:
@@ -27,7 +28,7 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
     ports:
-      - "8080:8080"
+      - "${KC_HOST_PORT:-8080}:8080"
     volumes:
       # The provider jar (run ./gradlew shadowJar first).
       - ./build/libs:/opt/keycloak/providers:ro

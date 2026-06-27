@@ -191,8 +191,7 @@ After deploying, set the plugin up in a realm:
 ## Local demo (Docker Compose)
 
 ```bash
-./gradlew shadowJar
-docker compose up
+make up            # = ./gradlew shadowJar && docker compose up
 ```
 
 This starts Keycloak (`http://localhost:8080`) with the provider deployed and a
@@ -200,12 +199,23 @@ WireMock BulkGate mock, and imports the `bulkgate-demo` realm: a `bulkgate-brows
 flow (password → SMS OTP), a public `demo-client`, and user **alice / password**
 with `mobile_number = +36201234567`.
 
-Log in to the `bulkgate-demo` realm as `alice`, then read the code that was
-"sent" from the WireMock journal:
+Host ports are overridable if 8080/8081 are taken:
 
 ```bash
-curl -s localhost:8081/__admin/requests | jq -r '.requests[0].request.body'
+KC_HOST_PORT=8080 WIREMOCK_HOST_PORT=8091 make up
 ```
+
+Log in to the `bulkgate-demo` realm as `alice`, then read the **latest** code
+that was "sent" from the WireMock journal (newest-first, transactional only):
+
+```bash
+curl -s localhost:8081/__admin/requests \
+  | jq -r 'first(.requests[] | select(.request.url|test("transactional")) | .request.body | fromjson | .text)'
+```
+
+Each time the OTP form is (re)rendered a new code is issued — only the newest is
+valid, so always read the latest entry. Use a fresh/incognito window to avoid
+stale login cookies.
 
 ## Security notes & known limitations
 
