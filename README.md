@@ -87,7 +87,9 @@ your flow → the *BulkGate SMS OTP* execution → ⚙ Config).
 | `resendCooldownSeconds` | `30` | Minimum delay between resends. |
 | `maxResends` | `3` | Resends allowed per login session. |
 | `smsTextTemplate` | `Your verification code is %code%. It is valid for %ttl% minutes.` | SMS body. Placeholders: `%code%`, `%ttl%`. |
-| `phoneNumberAttribute` | `mobile_number` | User attribute holding the number. |
+| `phoneNumberAttribute` | `phoneNumber` | User attribute holding the number. The default maps to Keycloak's built-in OIDC `phone_number` claim. |
+| `phoneNumberVerifiedAttribute` | `phoneNumberVerified` | Attribute set to `true` after a successful OTP; maps to the `phone_number_verified` claim. |
+| `markPhoneVerified` | `true` | Whether a successful OTP stamps the phone-verified attribute. |
 | `defaultCountryCode` | `+36` | Dialing code for numbers stored without an international prefix. |
 | `simulationMode` | `false` | Log the code instead of sending it (**development only**). |
 | `bulkgateApiUrl` | `https://portal.bulkgate.com/api/1.0/advanced/transactional` | Endpoint (http/https only). |
@@ -97,6 +99,35 @@ your flow → the *BulkGate SMS OTP* execution → ⚙ Config).
 | `bulkgateSenderIdValue` | — | Value for the sender id type (e.g. a text sender name). |
 | `bulkgateUnicode` | `false` | Send as Unicode. |
 | `bulkgateCountry` | — | Optional ISO country hint for BulkGate. |
+
+### Standard OIDC phone integration
+
+The defaults follow Keycloak's own conventions instead of a custom attribute:
+
+- The number lives in the **`phoneNumber`** user attribute, which Keycloak's
+  built-in (optional) **`phone` client scope** maps to the standard OIDC
+  `phone_number` claim — request the `phone` scope and the number flows into the
+  token with zero extra config.
+- A successful OTP stamps **`phoneNumberVerified=true`** (and the required action
+  resets it to `false` when a new number is entered), which the same scope maps
+  to `phone_number_verified`. Build conditional flows on it (e.g. only force SMS
+  setup when not yet verified).
+
+Recommended (and what the demo realm does): **declare** these attributes in the
+realm's declarative user profile — with validation and edit permissions — rather
+than enabling the blanket unmanaged-attribute policy. See
+[docker/realm/bulkgate-demo-realm.json](docker/realm/bulkgate-demo-realm.json)
+for a ready-made user-profile declaration.
+
+### Localization
+
+The plugin ships translated message bundles
+(`theme-resources/messages/messages_<locale>.properties`) for: English, Czech,
+Danish, German, Spanish, French, Hungarian, Italian, Lithuanian, Latvian,
+Polish, Portuguese, Romanian, Slovak, Swedish, Ukrainian. Enable the locales in
+*Realm settings → Localization*; Keycloak then shows a language switcher on the
+login pages and untranslated keys fall back to English. The demo realm enables
+all of them (default `hu`).
 
 ## Build
 
@@ -167,10 +198,11 @@ After deploying, set the plugin up in a realm:
 3. **Bind the flow.** *Authentication → Flows* → your flow → *Action → Bind flow
    → Browser flow*.
 4. **Give users a phone number.** Store it in the configured attribute
-   (`mobile_number` by default). Users without one are sent through the
-   *Configure BulkGate SMS phone number* required action on their next login. If
-   your realm uses the declarative user profile, declare that attribute (or
-   enable the unmanaged-attribute policy) so it persists.
+   (`phoneNumber` by default). Users without one are sent through the *Configure
+   BulkGate SMS phone number* required action on their next login. **Declare**
+   `phoneNumber` (and `phoneNumberVerified`) in the realm's declarative user
+   profile so they persist and validate — see the demo realm for an example; the
+   blanket unmanaged-attribute policy works too but is less controlled.
 
 ## Tests
 
@@ -197,7 +229,7 @@ make up            # = ./gradlew shadowJar && docker compose up
 This starts Keycloak (`http://localhost:8080`) with the provider deployed and a
 WireMock BulkGate mock, and imports the `bulkgate-demo` realm: a `bulkgate-browser`
 flow (password → SMS OTP), a public `demo-client`, and user **alice / password**
-with `mobile_number = +36201234567`.
+with `phoneNumber = +36201234567` (declared in the realm's user profile).
 
 Host ports are overridable if 8080/8081 are taken:
 
@@ -225,17 +257,17 @@ stale login cookies.
   (a resend cannot reset it). `SecureRandom` backs both the code and the salt.
 - **Simulation mode** logs the code in cleartext and must **never** be enabled in
   production. It is intended only for local development.
-- **Phone enrollment is not ownership-verified.** The required action stores the
-  number the user types without sending a confirmation code (a required action
-  has no access to the BulkGate config). If a user has no number on file the
-  authenticator enrolls them and completes — so **do not deploy this as a sole
-  first factor** unless you accept that unenrolled users pass it during
-  enrollment. Prefer second-factor use, an admin-provisioned/verified phone
-  attribute, or a flow that forces enrollment before access.
+- **Phone enrollment is not ownership-verified at entry.** The required action
+  stores the typed number with `phoneNumberVerified=false` (a required action has
+  no access to the BulkGate config to send a code); the first successful OTP then
+  flips it to `true`. If a user has no number on file the authenticator enrolls
+  them and completes — so **do not deploy this as a sole first factor** unless you
+  accept that unenrolled users pass it during enrollment. Prefer second-factor
+  use, an admin-provisioned number, or gate access on `phoneNumberVerified`.
 - **`phoneNumberAttribute` customization.** Keycloak does not pass the execution
   config to `configuredFor()` or to required actions, so the “is configured”
   check and the enrollment action use the **default** attribute name
-  (`mobile_number`) and the **default** country code (`+36`). Keep these at their
+  (`phoneNumber`) and the **default** country code (`+36`). Keep these at their
   defaults unless you populate the attribute yourself; otherwise enrolled users
   may be re-prompted.
 - **SMS pumping.** Resend throttling is per session. To bound cost/abuse across

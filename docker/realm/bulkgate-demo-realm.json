@@ -3,6 +3,9 @@
   "enabled": true,
   "sslRequired": "none",
   "loginWithEmailAllowed": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "cs", "da", "de", "es", "fr", "hu", "it", "lt", "lv", "pl", "pt", "ro", "sk", "sv", "uk"],
+  "defaultLocale": "hu",
   "browserFlow": "bulkgate-browser",
   "components": {
     "org.keycloak.userprofile.UserProfileProvider": [
@@ -10,7 +13,7 @@
         "providerId": "declarative-user-profile",
         "config": {
           "kc.user.profile.config": [
-            "{\"unmanagedAttributePolicy\":\"ENABLED\"}"
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}}, {\"name\": \"email\", \"displayName\": \"${email}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}}, {\"name\": \"phoneNumber\", \"displayName\": \"Phone number\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"validations\": {\"length\": {\"max\": 20}, \"pattern\": {\"pattern\": \"^\\\\+?[0-9 ()/.-]{6,}$\", \"error-message\": \"Invalid phone number\"}}}, {\"name\": \"phoneNumberVerified\", \"displayName\": \"Phone verified\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}}]}"
           ]
         }
       }
@@ -57,7 +60,7 @@
         "maxVerifyAttempts": "3",
         "resendCooldownSeconds": "30",
         "maxResends": "3",
-        "phoneNumberAttribute": "mobile_number",
+        "phoneNumberAttribute": "phoneNumber",
         "defaultCountryCode": "+36"
       }
     }
@@ -69,8 +72,12 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
-      "redirectUris": ["*"],
-      "webOrigins": ["*"]
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
     }
   ],
   "users": [
@@ -81,9 +88,13 @@
       "emailVerified": true,
       "firstName": "Alice",
       "lastName": "Demo",
-      "realmRoles": ["default-roles-bulkgate-demo"],
+      "realmRoles": [
+        "default-roles-bulkgate-demo"
+      ],
       "attributes": {
-        "mobile_number": ["+36201234567"]
+        "phoneNumber": [
+          "+36201234567"
+        ]
       },
       "credentials": [
         {
