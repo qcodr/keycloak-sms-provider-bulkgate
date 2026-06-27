@@ -21,18 +21,45 @@ A Keycloak authenticator that sends a one-time code by SMS through
 
 ## How it works
 
-```
-authenticate()                              action()  (code submitted)
-──────────────                              ─────────────────────────
-read realm config                           read realm config
-read phone from user attribute              load challenge from auth session
-  └─ missing → enrol via required action    verify(code, now, maxAttempts)
-normalise to E.164 (libphonenumber)           ├─ VALID            → success()
-generate N-digit code (SecureRandom)          ├─ INVALID          → ++attempts, re-ask / lock
-hash(code, random salt) → auth session        ├─ EXPIRED          → fail
-format SMS text (%code%, %ttl%)               ├─ TOO_MANY_ATTEMPTS→ fail
-send via BulkGate transactional API           └─ NO_CHALLENGE     → fail
-challenge the code-entry form               "Resend" → ResendPolicy (cooldown + cap)
+```mermaid
+sequenceDiagram
+    actor U as User / Browser
+    participant KC as Keycloak<br/>(SmsOtpAuthenticator)
+    participant BG as BulkGate<br/>(Transactional SMS API)
+
+    rect rgb(238, 246, 255)
+    note over U,BG: authenticate() — issue & send
+    KC->>KC: read realm config
+    KC->>KC: read phone from user attribute
+    alt no number on file
+        KC-->>U: enrol via required action, then continue
+    end
+    KC->>KC: normalise to E.164 (libphonenumber)
+    KC->>KC: generate N-digit code (SecureRandom)
+    KC->>KC: store salted SHA-256 hash + expiry in auth session
+    KC->>BG: send code as SMS text
+    BG-->>KC: accepted (sms_id)
+    KC-->>U: show code-entry form
+    end
+
+    rect rgb(240, 255, 244)
+    note over U,BG: action() — verify
+    U->>KC: submit code
+    KC->>KC: verify(code, now, maxAttempts)
+    alt VALID
+        KC-->>U: success → continue login
+    else INVALID
+        KC-->>U: re-ask (++attempts) or lock when budget spent
+    else EXPIRED / TOO_MANY_ATTEMPTS / NO_CHALLENGE
+        KC-->>U: fail
+    end
+    end
+
+    opt Resend requested
+        U->>KC: resend
+        KC->>KC: ResendPolicy — cooldown + per-session cap
+        KC->>BG: send a fresh code (attempt budget carried over)
+    end
 ```
 
 ### Package layout (SOLID, small focused units)
