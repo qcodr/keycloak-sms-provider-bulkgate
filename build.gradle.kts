@@ -99,8 +99,8 @@ dependencies {
     e2eTestImplementation("org.htmlunit:htmlunit:$htmlunitVersion")
 
     // --- Static analysis ----------------------------------------------------
-    errorprone("com.google.errorprone:error_prone_core:2.36.0")
-    spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0")
+    errorprone("com.google.errorprone:error_prone_core:2.50.0")
+    spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0")
 }
 
 // ---------------------------------------------------------------------------
