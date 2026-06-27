@@ -163,10 +163,12 @@ runtime.
 
 Requirements: Keycloak **26.6.3** and Java 21+ on the server.
 
-1. **Build the provider jar.**
+1. **Get the provider jar** — download the prebuilt fat jar from the
+   [Releases](https://github.com/qcodr/keycloak-sms-provider-bulkgate/releases)
+   page (published per `v*` tag, with a `SHA256SUMS.txt`), or build it yourself:
 
    ```bash
-   make jar      # → build/libs/keycloak-bulkgate-sms-authenticator-1.0.0.jar
+   make jar      # → build/libs/keycloak-bulkgate-sms-authenticator-<version>.jar
    ```
 
 2. **Deploy it.** Copy the jar into Keycloak's provider directory:

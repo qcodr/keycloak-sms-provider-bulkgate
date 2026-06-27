@@ -167,8 +167,14 @@ val e2eTest by tasks.registering(Test::class) {
 }
 
 tasks.shadowJar {
+    // Single deployable provider jar named <name>-<version>.jar (bundles
+    // libphonenumber; all Keycloak/Jackson classes stay provided by the server).
     archiveClassifier.set("")
-    // No third-party runtime dependencies are bundled; Keycloak provides them.
+}
+
+// Only ship the shaded jar — disable the thin jar so build/libs holds one artifact.
+tasks.named<Jar>("jar") {
+    enabled = false
 }
 
 tasks.build {
