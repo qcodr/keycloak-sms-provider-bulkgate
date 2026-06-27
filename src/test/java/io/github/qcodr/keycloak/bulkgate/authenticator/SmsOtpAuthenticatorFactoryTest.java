@@ -50,4 +50,14 @@ class SmsOtpAuthenticatorFactoryTest {
         assertThat(factory.getDisplayType()).isNotBlank();
         assertThat(factory.getHelpText()).isNotBlank();
     }
+
+    @Test
+    void lifecycleMethodsAreNoOps() {
+        org.assertj.core.api.Assertions.assertThatCode(() -> {
+                    factory.init(null);
+                    factory.postInit(null);
+                    factory.close();
+                })
+                .doesNotThrowAnyException();
+    }
 }

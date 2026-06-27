@@ -61,4 +61,19 @@ class LibPhoneNumberNormalizerTest {
     void rejectsTooShortNumber() {
         assertThatThrownBy(() -> hungarian.normalize("12")).isInstanceOf(InvalidPhoneNumberException.class);
     }
+
+    @Test
+    void rejectsNullInput() {
+        assertThatThrownBy(() -> hungarian.normalize(null)).isInstanceOf(InvalidPhoneNumberException.class);
+    }
+
+    @Test
+    void rejectsBlankDefaultCountryCode() {
+        assertThatThrownBy(() -> new LibPhoneNumberNormalizer("  ")).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void rejectsNonNumericDefaultCountryCode() {
+        assertThatThrownBy(() -> new LibPhoneNumberNormalizer("abc")).isInstanceOf(IllegalArgumentException.class);
+    }
 }

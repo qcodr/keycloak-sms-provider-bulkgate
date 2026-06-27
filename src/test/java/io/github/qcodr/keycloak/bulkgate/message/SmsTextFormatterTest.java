@@ -35,4 +35,9 @@ class SmsTextFormatterTest {
     void rejectsBlankTemplate() {
         assertThatThrownBy(() -> formatter.format("  ", "123456", 5)).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void rejectsNullTemplate() {
+        assertThatThrownBy(() -> formatter.format(null, "123456", 5)).isInstanceOf(IllegalArgumentException.class);
+    }
 }

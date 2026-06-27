@@ -4,6 +4,7 @@
 package io.github.qcodr.keycloak.bulkgate.otp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,5 +38,11 @@ class Sha256OtpHasherTest {
     void producesLowercaseHexOfExpectedLength() {
         // SHA-256 -> 32 bytes -> 64 hex chars.
         assertThat(hasher.hash("123456", "salt")).hasSize(64).matches("[0-9a-f]{64}");
+    }
+
+    @Test
+    void rejectsNullCodeOrSalt() {
+        assertThatThrownBy(() -> hasher.hash(null, "salt")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> hasher.hash("123456", null)).isInstanceOf(IllegalArgumentException.class);
     }
 }

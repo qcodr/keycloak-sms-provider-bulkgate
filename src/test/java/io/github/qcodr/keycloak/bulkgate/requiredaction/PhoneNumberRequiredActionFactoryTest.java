@@ -23,4 +23,15 @@ class PhoneNumberRequiredActionFactoryTest {
     void createReturnsThePhoneNumberRequiredAction() {
         assertThat(factory.create(null)).isNotNull().isInstanceOf(PhoneNumberRequiredAction.class);
     }
+
+    @Test
+    void lifecycleMethodsAreNoOps() {
+        org.assertj.core.api.Assertions.assertThatCode(() -> {
+                    factory.init(null);
+                    factory.postInit(null);
+                    factory.close();
+                    factory.create(null).close();
+                })
+                .doesNotThrowAnyException();
+    }
 }

@@ -122,4 +122,89 @@ class BulkGateSmsGatewayTest {
         assertThat(body.has("sender_id_value")).isFalse();
         assertThat(body.has("country")).isFalse();
     }
+
+    @Test
+    void serializesUnicodeSenderValueAndCountryWhenSet() throws Exception {
+        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson("{\"data\":{\"status\":\"accepted\",\"sms_id\":\"x\"}}")));
+        BulkGateSettings full =
+                new BulkGateSettings(WM.baseUrl() + PATH, "app-1", "token-1", "gText", "Brand", true, "HU");
+
+        gatewayWith(full).send(new SmsMessage("+36201234567", "Helló"));
+
+        JsonNode body = mapper.readTree(
+                WM.findAll(postRequestedFor(urlEqualTo(PATH))).get(0).getBodyAsString());
+        assertThat(body.get("unicode").asBoolean()).isTrue();
+        assertThat(body.get("sender_id_value").asText()).isEqualTo("Brand");
+        assertThat(body.get("country").asText()).isEqualTo("HU");
+    }
+
+    @Test
+    void throwsWhenSuccessPayloadHasUnexpectedStatus() {
+        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson("{\"data\":{\"status\":\"queued\"}}")));
+
+        assertThatThrownBy(() -> gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi")))
+                .isInstanceOf(SmsGatewayException.class);
+    }
+
+    @Test
+    void throwsWhenSuccessBodyIsUnparseable() {
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("not even json")));
+
+        assertThatThrownBy(() -> gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi")))
+                .isInstanceOf(SmsGatewayException.class);
+    }
+
+    @Test
+    void rejectsWhenSuccessPayloadCarriesAnError() throws Exception {
+        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson("{\"error\":\"nope\"}")));
+
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi"));
+
+        assertThat(result.accepted()).isFalse();
+        assertThat(result.errorMessage()).isEqualTo("nope");
+    }
+
+    @Test
+    void fallsBackToHttpStatusCodeWhenErrorBodyHasNoCode() throws Exception {
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"error\":\"boom\"}")));
+
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi"));
+
+        assertThat(result.accepted()).isFalse();
+        assertThat(result.errorCode()).isEqualTo("http_500");
+        assertThat(result.errorMessage()).isEqualTo("boom");
+    }
+
+    @Test
+    void usesTypeAsErrorCodeWhenNumericCodeAbsent() throws Exception {
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(aResponse()
+                        .withStatus(422)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"type\":\"invalid_number\",\"error\":\"bad\"}")));
+
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi"));
+
+        assertThat(result.errorCode()).isEqualTo("invalid_number");
+        assertThat(result.errorMessage()).isEqualTo("bad");
+    }
+
+    @Test
+    void rejectsNonJsonErrorBodyWithRawText() throws Exception {
+        WM.stubFor(post(urlEqualTo(PATH)).willReturn(aResponse().withStatus(503).withBody("Service Unavailable")));
+
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Hi"));
+
+        assertThat(result.accepted()).isFalse();
+        assertThat(result.errorCode()).isEqualTo("http_503");
+        assertThat(result.errorMessage()).isEqualTo("Service Unavailable");
+    }
 }
