@@ -66,7 +66,7 @@ dependencies {
     compileOnly("org.keycloak:keycloak-services:$keycloakVersion")
     compileOnly("org.keycloak:keycloak-core:$keycloakVersion")
     compileOnly("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
-    compileOnly("org.jboss.logging:jboss-logging:3.6.1.Final")
+    compileOnly("org.jboss.logging:jboss-logging:3.6.3.Final")
     // Jackson ships inside Keycloak; compile against it but do not bundle it.
     compileOnly("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
