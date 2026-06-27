@@ -10,6 +10,11 @@ updates:
     labels: ["dependencies"]
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # jakarta.ws.rs-api is provided by Keycloak at runtime (3.1 / Jakarta EE 10);
+      # don't drift the compileOnly API ahead of what the server ships.
+      - dependency-name: "jakarta.ws.rs:jakarta.ws.rs-api"
+        update-types: ["version-update:semver-major"]
     groups:
       keycloak:
         patterns:

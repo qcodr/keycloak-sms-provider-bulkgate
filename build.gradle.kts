@@ -141,6 +141,8 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
+    // Required by recent Error Prone releases on JDK 16+ (no-op for javac otherwise).
+    options.compilerArgs.add("-XDaddTypeAnnotationsToSymbol=true")
 }
 
 tasks.test {
