@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/qcodr/keycloak-sms-provider-bulkgate/actions/workflows/ci.yml/badge.svg)](https://github.com/qcodr/keycloak-sms-provider-bulkgate/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/qcodr/keycloak-sms-provider-bulkgate?sort=semver)](https://github.com/qcodr/keycloak-sms-provider-bulkgate/releases)
+[![codecov](https://codecov.io/gh/qcodr/keycloak-sms-provider-bulkgate/branch/main/graph/badge.svg)](https://codecov.io/gh/qcodr/keycloak-sms-provider-bulkgate)
 [![License](https://img.shields.io/github/license/qcodr/keycloak-sms-provider-bulkgate)](LICENSE)
 ![Keycloak](https://img.shields.io/badge/Keycloak-26.6.3-4d4d4d?logo=keycloak)
 ![Java](https://img.shields.io/badge/Java-21-ea2d2e?logo=openjdk)

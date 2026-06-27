@@ -20,8 +20,14 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       # `build` runs spotlessCheck, Error Prone (compile), SpotBugs/FindSecBugs,
-      # the unit/integration tests, and the shaded provider jar.
+      # the unit/integration tests (with JaCoCo coverage), and the shaded jar.
       - run: ./gradlew build --no-daemon --stacktrace
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          fail_ci_if_error: false
       - name: Upload analysis & test reports
         if: always()
         uses: actions/upload-artifact@v4
