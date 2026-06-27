@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs / FindSecBugs exclusions. Each entry carries a justification.
+-->
+<FindBugsFilter>
+
+    <!--
+      The authenticator deliberately injects shared, effectively-immutable
+      infrastructure (ObjectMapper, HttpClient, SecureRandom) and immutable value
+      types (records, Duration, BulkGateSettings). Defensive copies are neither
+      possible (HttpClient/SecureRandom) nor meaningful (immutable values), so the
+      "exposes internal representation" reports are by-design dependency injection.
+    -->
+    <Match>
+        <Package name="~io\.github\.qcodr\.keycloak\.bulkgate.*"/>
+        <Or>
+            <Bug pattern="EI_EXPOSE_REP"/>
+            <Bug pattern="EI_EXPOSE_REP2"/>
+        </Or>
+    </Match>
+
+    <!--
+      Value objects validate their invariants in the constructor (fail fast). The
+      affected types are final (records) or have no finalizer, so the finalizer
+      partial-construction attack that CT_CONSTRUCTOR_THROW guards against does not
+      apply.
+    -->
+    <Match>
+        <Package name="~io\.github\.qcodr\.keycloak\.bulkgate.*"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+</FindBugsFilter>

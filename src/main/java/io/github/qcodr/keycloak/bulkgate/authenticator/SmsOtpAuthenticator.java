@@ -29,6 +29,9 @@ import io.github.qcodr.keycloak.bulkgate.phone.PhoneNumber;
 import io.github.qcodr.keycloak.bulkgate.requiredaction.PhoneNumberRequiredAction;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import java.net.http.HttpClient;
+import java.time.Clock;
+import java.time.Duration;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -40,10 +43,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
-
-import java.net.http.HttpClient;
-import java.time.Clock;
-import java.time.Duration;
 
 /**
  * SMS one-time-password authenticator. Keycloak generates the code, sends it via
@@ -86,18 +85,20 @@ public class SmsOtpAuthenticator implements Authenticator {
 
     /** Production wiring: secure-random code/salt, system clock, shared HTTP client. */
     public SmsOtpAuthenticator() {
-        this(Clock.systemUTC(),
+        this(
+                Clock.systemUTC(),
                 new SecureRandomOtpCodeGenerator(),
                 new SecureRandomSaltSource(),
                 new SmsGatewayResolver(newHttpClient(), MAPPER, Duration.ofSeconds(10)),
                 MAPPER);
     }
 
-    SmsOtpAuthenticator(Clock clock,
-                        OtpCodeGenerator codeGenerator,
-                        SaltSource saltSource,
-                        SmsGatewayResolver gatewayResolver,
-                        ObjectMapper mapper) {
+    SmsOtpAuthenticator(
+            Clock clock,
+            OtpCodeGenerator codeGenerator,
+            SaltSource saltSource,
+            SmsGatewayResolver gatewayResolver,
+            ObjectMapper mapper) {
         Sha256OtpHasher hasher = new Sha256OtpHasher();
         this.clock = clock;
         this.challengeFactory = new OtpChallengeFactory(codeGenerator, hasher, saltSource, clock);
@@ -133,34 +134,52 @@ public class SmsOtpAuthenticator implements Authenticator {
             phone = new LibPhoneNumberNormalizer(config.defaultCountryCode()).normalize(rawPhone);
         } catch (InvalidPhoneNumberException e) {
             LOG.warnf("Stored phone number for user %s is not valid: %s", user.getId(), e.getMessage());
-            failure(context, AuthenticationFlowError.INVALID_CREDENTIALS, MSG_INVALID_PHONE, Response.Status.BAD_REQUEST);
+            failure(
+                    context,
+                    AuthenticationFlowError.INVALID_CREDENTIALS,
+                    MSG_INVALID_PHONE,
+                    Response.Status.BAD_REQUEST);
             return;
         }
         issueAndChallenge(context, config, phone, 0, 0, null);
     }
 
-    private void issueAndChallenge(AuthenticationFlowContext context, SmsAuthenticatorConfig config,
-                                   PhoneNumber phone, int priorResends, int priorAttempts, String infoKey) {
+    private void issueAndChallenge(
+            AuthenticationFlowContext context,
+            SmsAuthenticatorConfig config,
+            PhoneNumber phone,
+            int priorResends,
+            int priorAttempts,
+            String infoKey) {
         AuthenticationSessionModel authSession = context.getAuthenticationSession();
         IssuedOtp issued = challengeFactory.issue(
                 config.codeLength(), config.codeTtl(), phone.e164(), priorResends, priorAttempts);
         challengeStore.store(authSession, issued.challenge());
 
-        String text = textFormatter.format(config.smsTextTemplate(), issued.plaintext().value(), config.ttlMinutes());
+        String text = textFormatter.format(
+                config.smsTextTemplate(), issued.plaintext().value(), config.ttlMinutes());
         try {
             SmsGateway gateway = gatewayResolver.resolve(config);
             SmsSendResult result = gateway.send(new SmsMessage(phone.e164(), text));
             if (!result.accepted()) {
                 LOG.warnf("BulkGate rejected SMS: code=%s message=%s", result.errorCode(), result.errorMessage());
                 challengeStore.clear(authSession);
-                failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_NOT_SENT, Response.Status.INTERNAL_SERVER_ERROR);
+                failure(
+                        context,
+                        AuthenticationFlowError.INTERNAL_ERROR,
+                        MSG_NOT_SENT,
+                        Response.Status.INTERNAL_SERVER_ERROR);
                 return;
             }
         } catch (SmsGatewayException | RuntimeException e) {
             LOG.error("Failed to send OTP via BulkGate", e);
             // Don't leave a hash for a code the user never received.
             challengeStore.clear(authSession);
-            failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_NOT_SENT, Response.Status.INTERNAL_SERVER_ERROR);
+            failure(
+                    context,
+                    AuthenticationFlowError.INTERNAL_ERROR,
+                    MSG_NOT_SENT,
+                    Response.Status.INTERNAL_SERVER_ERROR);
             return;
         }
 
@@ -189,7 +208,8 @@ public class SmsOtpAuthenticator implements Authenticator {
 
         String submitted = form.getFirst(FORM_CODE_PARAM);
         OtpChallenge challenge = challengeStore.load(authSession);
-        OtpVerificationResult result = verifier.verify(challenge, submitted, clock.instant(), config.maxVerifyAttempts());
+        OtpVerificationResult result =
+                verifier.verify(challenge, submitted, clock.instant(), config.maxVerifyAttempts());
 
         switch (result) {
             case VALID -> {
@@ -198,14 +218,21 @@ public class SmsOtpAuthenticator implements Authenticator {
                 context.success();
             }
             case INVALID -> onInvalidCode(context, config, authSession, challenge);
-            case EXPIRED ->
-                    failure(context, AuthenticationFlowError.EXPIRED_CODE, MSG_CODE_EXPIRED, Response.Status.BAD_REQUEST);
+            case EXPIRED -> failure(
+                    context, AuthenticationFlowError.EXPIRED_CODE, MSG_CODE_EXPIRED, Response.Status.BAD_REQUEST);
             case TOO_MANY_ATTEMPTS -> {
                 context.getEvent().user(context.getUser()).error(Errors.INVALID_USER_CREDENTIALS);
-                failure(context, AuthenticationFlowError.INVALID_CREDENTIALS, MSG_TOO_MANY, Response.Status.BAD_REQUEST);
+                failure(
+                        context,
+                        AuthenticationFlowError.INVALID_CREDENTIALS,
+                        MSG_TOO_MANY,
+                        Response.Status.BAD_REQUEST);
             }
-            case NO_CHALLENGE ->
-                    failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_INTERNAL, Response.Status.INTERNAL_SERVER_ERROR);
+            case NO_CHALLENGE -> failure(
+                    context,
+                    AuthenticationFlowError.INTERNAL_ERROR,
+                    MSG_INTERNAL,
+                    Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -219,8 +246,11 @@ public class SmsOtpAuthenticator implements Authenticator {
         }
     }
 
-    private void onInvalidCode(AuthenticationFlowContext context, SmsAuthenticatorConfig config,
-                               AuthenticationSessionModel authSession, OtpChallenge challenge) {
+    private void onInvalidCode(
+            AuthenticationFlowContext context,
+            SmsAuthenticatorConfig config,
+            AuthenticationSessionModel authSession,
+            OtpChallenge challenge) {
         OtpChallenge updated = challenge.withIncrementedAttempts();
         challengeStore.store(authSession, updated);
         context.getEvent().user(context.getUser()).error(Errors.INVALID_USER_CREDENTIALS);
@@ -232,21 +262,30 @@ public class SmsOtpAuthenticator implements Authenticator {
         }
     }
 
-    private void handleResend(AuthenticationFlowContext context, SmsAuthenticatorConfig config,
-                              AuthenticationSessionModel authSession) {
+    private void handleResend(
+            AuthenticationFlowContext context, SmsAuthenticatorConfig config, AuthenticationSessionModel authSession) {
         OtpChallenge challenge = challengeStore.load(authSession);
         if (challenge == null) {
-            failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_INTERNAL, Response.Status.INTERNAL_SERVER_ERROR);
+            failure(
+                    context,
+                    AuthenticationFlowError.INTERNAL_ERROR,
+                    MSG_INTERNAL,
+                    Response.Status.INTERNAL_SERVER_ERROR);
             return;
         }
         ResendPolicy.Decision decision =
                 ResendPolicy.evaluate(challenge, config.maxResends(), config.resendCooldown(), clock.instant());
         switch (decision) {
             case ALLOWED ->
-                    // Carry the spent attempts forward so a resend cannot reset the
-                    // guessing budget; the budget is per login session, not per code.
-                    issueAndChallenge(context, config, new PhoneNumber(challenge.recipient()),
-                            challenge.resends() + 1, challenge.attempts(), MSG_RESENT);
+            // Carry the spent attempts forward so a resend cannot reset the
+            // guessing budget; the budget is per login session, not per code.
+            issueAndChallenge(
+                    context,
+                    config,
+                    new PhoneNumber(challenge.recipient()),
+                    challenge.resends() + 1,
+                    challenge.attempts(),
+                    MSG_RESENT);
             case COOLDOWN -> reChallenge(context, config, MSG_RESEND_COOLDOWN);
             case LIMIT_REACHED -> reChallenge(context, config, MSG_RESEND_LIMIT);
         }
@@ -262,8 +301,11 @@ public class SmsOtpAuthenticator implements Authenticator {
         context.challenge(form);
     }
 
-    private void failure(AuthenticationFlowContext context, AuthenticationFlowError error,
-                         String messageKey, Response.Status status) {
+    private void failure(
+            AuthenticationFlowContext context,
+            AuthenticationFlowError error,
+            String messageKey,
+            Response.Status status) {
         context.failureChallenge(error, context.form().setError(messageKey).createErrorPage(status));
     }
 
@@ -273,7 +315,11 @@ public class SmsOtpAuthenticator implements Authenticator {
             return SmsAuthenticatorConfig.from(model == null ? null : model.getConfig());
         } catch (InvalidConfigurationException e) {
             LOG.error("Invalid BulkGate SMS authenticator configuration", e);
-            failure(context, AuthenticationFlowError.INTERNAL_ERROR, MSG_INTERNAL, Response.Status.INTERNAL_SERVER_ERROR);
+            failure(
+                    context,
+                    AuthenticationFlowError.INTERNAL_ERROR,
+                    MSG_INTERNAL,
+                    Response.Status.INTERNAL_SERVER_ERROR);
             return null;
         }
     }
@@ -299,6 +345,5 @@ public class SmsOtpAuthenticator implements Authenticator {
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 }

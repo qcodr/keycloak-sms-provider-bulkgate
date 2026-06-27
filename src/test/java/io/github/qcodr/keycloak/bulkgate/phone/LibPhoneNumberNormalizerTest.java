@@ -3,12 +3,12 @@
  */
 package io.github.qcodr.keycloak.bulkgate.phone;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LibPhoneNumberNormalizerTest {
 
@@ -16,12 +16,12 @@ class LibPhoneNumberNormalizerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "+36201234567,      +36201234567",
-            "0036201234567,     +36201234567",
-            "06201234567,       +36201234567",   // Hungarian two-digit trunk prefix '06'
-            "+36 20 123 4567,   +36201234567",
-            "+36-20-123-4567,   +36201234567",
-            "(+36) 20/123.4567, +36201234567"
+        "+36201234567,      +36201234567",
+        "0036201234567,     +36201234567",
+        "06201234567,       +36201234567", // Hungarian two-digit trunk prefix '06'
+        "+36 20 123 4567,   +36201234567",
+        "+36-20-123-4567,   +36201234567",
+        "(+36) 20/123.4567, +36201234567"
     })
     void normalizesCommonHungarianNotationsToE164(String raw, String expected) {
         assertThat(hungarian.normalize(raw).e164()).isEqualTo(expected);
@@ -49,19 +49,16 @@ class LibPhoneNumberNormalizerTest {
 
     @Test
     void rejectsBlankInput() {
-        assertThatThrownBy(() -> hungarian.normalize("   "))
-                .isInstanceOf(InvalidPhoneNumberException.class);
+        assertThatThrownBy(() -> hungarian.normalize("   ")).isInstanceOf(InvalidPhoneNumberException.class);
     }
 
     @Test
     void rejectsUnparseableInput() {
-        assertThatThrownBy(() -> hungarian.normalize("not-a-number"))
-                .isInstanceOf(InvalidPhoneNumberException.class);
+        assertThatThrownBy(() -> hungarian.normalize("not-a-number")).isInstanceOf(InvalidPhoneNumberException.class);
     }
 
     @Test
     void rejectsTooShortNumber() {
-        assertThatThrownBy(() -> hungarian.normalize("12"))
-                .isInstanceOf(InvalidPhoneNumberException.class);
+        assertThatThrownBy(() -> hungarian.normalize("12")).isInstanceOf(InvalidPhoneNumberException.class);
     }
 }

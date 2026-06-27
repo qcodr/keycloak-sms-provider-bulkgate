@@ -1,6 +1,11 @@
+import net.ltgt.gradle.errorprone.errorprone
+
 plugins {
     `java-library`
     id("com.gradleup.shadow") version "8.3.5"
+    id("com.diffplug.spotless") version "6.25.0"
+    id("net.ltgt.errorprone") version "4.1.0"
+    id("com.github.spotbugs") version "6.0.26"
 }
 
 val keycloakVersion: String by project
@@ -91,6 +96,45 @@ dependencies {
     e2eTestImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     // Drive the Keycloak login pages directly with HtmlUnit's WebClient (no browser).
     e2eTestImplementation("org.htmlunit:htmlunit:$htmlunitVersion")
+
+    // --- Static analysis ----------------------------------------------------
+    errorprone("com.google.errorprone:error_prone_core:2.36.0")
+    spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0")
+}
+
+// ---------------------------------------------------------------------------
+// Static analysis & formatting
+// ---------------------------------------------------------------------------
+spotless {
+    java {
+        target("src/**/*.java")
+        palantirJavaFormat("2.50.0")
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+spotbugs {
+    effort.set(com.github.spotbugs.snom.Effort.MAX)
+    reportLevel.set(com.github.spotbugs.snom.Confidence.LOW)
+    excludeFilter.set(file("config/spotbugs/exclude.xml"))
+}
+
+// Analyse production code only; tests are not the security surface.
+listOf("spotbugsTest", "spotbugsE2eTest").forEach { name ->
+    tasks.matching { it.name == name }.configureEach { enabled = false }
+}
+
+tasks.spotbugsMain {
+    reports.create("html") { required.set(true) }
+    reports.create("xml") { required.set(false) }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        disableWarningsInGeneratedCode.set(true)
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {

@@ -3,18 +3,6 @@
  */
 package io.github.qcodr.keycloak.bulkgate.gateway;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.http.Fault;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.net.http.HttpClient;
-import java.time.Duration;
-import java.util.List;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
@@ -25,6 +13,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.http.Fault;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class BulkGateSmsGatewayTest {
 
@@ -48,11 +47,11 @@ class BulkGateSmsGatewayTest {
 
     @Test
     void returnsAcceptedAndParsesSmsId() throws Exception {
-        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson(
-                "{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-123\",\"number\":\"36201234567\"}}")));
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(okJson(
+                        "{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-123\",\"number\":\"36201234567\"}}")));
 
-        SmsSendResult result = gatewayWith(liveSettings())
-                .send(new SmsMessage("+36201234567", "Your code is 123456"));
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Your code is 123456"));
 
         assertThat(result.accepted()).isTrue();
         assertThat(result.providerMessageId()).isEqualTo("sms-123");
@@ -60,8 +59,8 @@ class BulkGateSmsGatewayTest {
 
     @Test
     void sendsCredentialsNumberWithoutPlusAndText() throws Exception {
-        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson(
-                "{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-123\"}}")));
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(okJson("{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-123\"}}")));
 
         gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Your code is 123456"));
 
@@ -76,14 +75,14 @@ class BulkGateSmsGatewayTest {
 
     @Test
     void mapsProviderErrorToRejectedResult() throws Exception {
-        WM.stubFor(post(urlEqualTo(PATH)).willReturn(aResponse()
-                .withStatus(400)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"type\":\"invalid_input_parameters\",\"code\":400,"
-                        + "\"error\":\"Wrong phone number\",\"detail\":null}")));
+        WM.stubFor(post(urlEqualTo(PATH))
+                .willReturn(aResponse()
+                        .withStatus(400)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"type\":\"invalid_input_parameters\",\"code\":400,"
+                                + "\"error\":\"Wrong phone number\",\"detail\":null}")));
 
-        SmsSendResult result = gatewayWith(liveSettings())
-                .send(new SmsMessage("+36201234567", "Your code is 123456"));
+        SmsSendResult result = gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Your code is 123456"));
 
         assertThat(result.accepted()).isFalse();
         assertThat(result.errorCode()).isEqualTo("400");
@@ -92,11 +91,10 @@ class BulkGateSmsGatewayTest {
 
     @Test
     void throwsGatewayExceptionOnTransportFault() {
-        WM.stubFor(post(urlEqualTo(PATH))
-                .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
+        WM.stubFor(post(urlEqualTo(PATH)).willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-        assertThatThrownBy(() -> gatewayWith(liveSettings())
-                .send(new SmsMessage("+36201234567", "Your code is 123456")))
+        assertThatThrownBy(
+                        () -> gatewayWith(liveSettings()).send(new SmsMessage("+36201234567", "Your code is 123456")))
                 .isInstanceOf(SmsGatewayException.class);
     }
 
@@ -104,15 +102,14 @@ class BulkGateSmsGatewayTest {
     void refusesToSendWithoutCredentials() {
         BulkGateSettings noCreds = new BulkGateSettings(WM.baseUrl() + PATH, "", "", "gSystem", "", false, "");
 
-        assertThatThrownBy(() -> gatewayWith(noCreds)
-                .send(new SmsMessage("+36201234567", "Your code is 123456")))
+        assertThatThrownBy(() -> gatewayWith(noCreds).send(new SmsMessage("+36201234567", "Your code is 123456")))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void omitsSenderIdValueAndCountryWhenBlank() throws Exception {
-        WM.stubFor(post(urlEqualTo(PATH)).willReturn(okJson(
-                "{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-9\"}}")));
+        WM.stubFor(
+                post(urlEqualTo(PATH)).willReturn(okJson("{\"data\":{\"status\":\"accepted\",\"sms_id\":\"sms-9\"}}")));
         BulkGateSettings minimal =
                 new BulkGateSettings(WM.baseUrl() + PATH, "app-1", "token-1", "gSystem", "", false, "");
 

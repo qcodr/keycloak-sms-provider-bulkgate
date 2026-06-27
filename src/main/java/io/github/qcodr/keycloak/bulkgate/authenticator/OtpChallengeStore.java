@@ -7,10 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.qcodr.keycloak.bulkgate.otp.OtpChallenge;
-import org.keycloak.sessions.AuthenticationSessionModel;
-
 import java.io.IOException;
 import java.time.Instant;
+import org.keycloak.sessions.AuthenticationSessionModel;
 
 /**
  * Persists the {@link OtpChallenge} in the authentication session as a single

@@ -3,10 +3,10 @@
  */
 package io.github.qcodr.keycloak.bulkgate.message;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.Test;
 
 class SmsTextFormatterTest {
 
@@ -28,13 +28,11 @@ class SmsTextFormatterTest {
 
     @Test
     void leavesTextWithoutPlaceholdersUntouched() {
-        assertThat(formatter.format("No placeholders here", "123456", 5))
-                .isEqualTo("No placeholders here");
+        assertThat(formatter.format("No placeholders here", "123456", 5)).isEqualTo("No placeholders here");
     }
 
     @Test
     void rejectsBlankTemplate() {
-        assertThatThrownBy(() -> formatter.format("  ", "123456", 5))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> formatter.format("  ", "123456", 5)).isInstanceOf(IllegalArgumentException.class);
     }
 }

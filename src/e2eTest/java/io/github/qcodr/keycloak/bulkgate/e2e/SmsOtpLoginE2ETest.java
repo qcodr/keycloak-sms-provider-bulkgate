@@ -3,12 +3,25 @@
  */
 package io.github.qcodr.keycloak.bulkgate.e2e;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
+import java.io.File;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.AfterAll;
@@ -28,21 +41,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.io.File;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * End-to-end test of the full login: a real Keycloak 26.6.3 with the provider jar
@@ -99,15 +97,20 @@ class SmsOtpLoginE2ETest {
 
     @BeforeEach
     void resetJournal() throws Exception {
-        HTTP.send(HttpRequest.newBuilder(URI.create(wiremockAdmin() + "/__admin/requests"))
-                .DELETE().build(), HttpResponse.BodyHandlers.discarding());
+        HTTP.send(
+                HttpRequest.newBuilder(URI.create(wiremockAdmin() + "/__admin/requests"))
+                        .DELETE()
+                        .build(),
+                HttpResponse.BodyHandlers.discarding());
     }
 
     @Test
     void userLogsInWithPasswordThenSmsCode() throws Exception {
         try (WebClient web = newWebClient()) {
             HtmlPage otpPage = submitPassword(web);
-            assertThat(otpPage.getElementById("code")).as("OTP form should be shown").isNotNull();
+            assertThat(otpPage.getElementById("code"))
+                    .as("OTP form should be shown")
+                    .isNotNull();
 
             // Guard the instruction line: the TTL must render as a number, not a
             // leaked FreeMarker formatter object.
@@ -139,7 +142,9 @@ class SmsOtpLoginE2ETest {
 
             assertThat(result).isInstanceOf(HtmlPage.class);
             HtmlPage htmlResult = (HtmlPage) result;
-            assertThat(htmlResult.getElementById("code")).as("still on the OTP form").isNotNull();
+            assertThat(htmlResult.getElementById("code"))
+                    .as("still on the OTP form")
+                    .isNotNull();
             assertThat(htmlResult.asNormalizedText()).contains("Invalid verification code");
         }
     }
@@ -176,12 +181,15 @@ class SmsOtpLoginE2ETest {
 
     private String latestSentCode() throws Exception {
         HttpResponse<String> response = HTTP.send(
-                HttpRequest.newBuilder(URI.create(wiremockAdmin() + "/__admin/requests")).GET().build(),
+                HttpRequest.newBuilder(URI.create(wiremockAdmin() + "/__admin/requests"))
+                        .GET()
+                        .build(),
                 HttpResponse.BodyHandlers.ofString());
         JsonNode requests = MAPPER.readTree(response.body()).path("requests");
         for (JsonNode entry : requests) {
             JsonNode request = entry.path("request");
-            if ("POST".equals(request.path("method").asText()) && request.path("url").asText().contains(SMS_PATH)) {
+            if ("POST".equals(request.path("method").asText())
+                    && request.path("url").asText().contains(SMS_PATH)) {
                 JsonNode smsBody = MAPPER.readTree(request.path("body").asText());
                 Matcher matcher = CODE_PATTERN.matcher(smsBody.path("text").asText());
                 if (matcher.find()) {
@@ -328,9 +336,12 @@ class SmsOtpLoginE2ETest {
                 .username(KEYCLOAK.getAdminUsername())
                 .password(KEYCLOAK.getAdminPassword())
                 .build()) {
-            UserRepresentation user = admin.realm(REALM).users().search(username).get(0);
+            UserRepresentation user =
+                    admin.realm(REALM).users().search(username).get(0);
             Map<String, List<String>> attrs = user.getAttributes();
-            if (attrs == null || attrs.get(attribute) == null || attrs.get(attribute).isEmpty()) {
+            if (attrs == null
+                    || attrs.get(attribute) == null
+                    || attrs.get(attribute).isEmpty()) {
                 return null;
             }
             return attrs.get(attribute).get(0);

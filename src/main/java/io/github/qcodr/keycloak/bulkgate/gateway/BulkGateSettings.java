@@ -29,8 +29,7 @@ public record BulkGateSettings(
         boolean unicode,
         String country) {
 
-    public static final String DEFAULT_API_URL =
-            "https://portal.bulkgate.com/api/1.0/advanced/transactional";
+    public static final String DEFAULT_API_URL = "https://portal.bulkgate.com/api/1.0/advanced/transactional";
 
     /** BulkGate's neutral default sender id type when none is configured. */
     public static final String DEFAULT_SENDER_ID = "gSystem";

@@ -42,8 +42,8 @@ public class OtpChallengeFactory {
         String salt = saltSource.newSalt();
         String hashed = hasher.hash(code.value(), salt);
         Instant now = clock.instant();
-        OtpChallenge challenge = new OtpChallenge(
-                hashed, salt, now.plus(ttl), priorAttempts, priorResends, recipient, now);
+        OtpChallenge challenge =
+                new OtpChallenge(hashed, salt, now.plus(ttl), priorAttempts, priorResends, recipient, now);
         return new IssuedOtp(challenge, code);
     }
 }

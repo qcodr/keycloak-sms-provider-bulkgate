@@ -3,9 +3,9 @@
  */
 package io.github.qcodr.keycloak.bulkgate.otp;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 class Sha256OtpHasherTest {
 
@@ -13,20 +13,17 @@ class Sha256OtpHasherTest {
 
     @Test
     void isDeterministicForSameInputs() {
-        assertThat(hasher.hash("123456", "salt"))
-                .isEqualTo(hasher.hash("123456", "salt"));
+        assertThat(hasher.hash("123456", "salt")).isEqualTo(hasher.hash("123456", "salt"));
     }
 
     @Test
     void differsWhenSaltDiffers() {
-        assertThat(hasher.hash("123456", "saltA"))
-                .isNotEqualTo(hasher.hash("123456", "saltB"));
+        assertThat(hasher.hash("123456", "saltA")).isNotEqualTo(hasher.hash("123456", "saltB"));
     }
 
     @Test
     void differsWhenCodeDiffers() {
-        assertThat(hasher.hash("123456", "salt"))
-                .isNotEqualTo(hasher.hash("654321", "salt"));
+        assertThat(hasher.hash("123456", "salt")).isNotEqualTo(hasher.hash("654321", "salt"));
     }
 
     @Test

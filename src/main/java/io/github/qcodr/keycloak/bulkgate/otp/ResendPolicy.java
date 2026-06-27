@@ -13,8 +13,7 @@ import java.time.Instant;
  */
 public final class ResendPolicy {
 
-    private ResendPolicy() {
-    }
+    private ResendPolicy() {}
 
     public enum Decision {
         /** A new code may be sent now. */

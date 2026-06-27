@@ -20,8 +20,6 @@ public class SmsTextFormatter {
         if (template == null || template.isBlank()) {
             throw new IllegalArgumentException("SMS text template must not be blank");
         }
-        return template
-                .replace(CODE_PLACEHOLDER, code)
-                .replace(TTL_PLACEHOLDER, Long.toString(ttlMinutes));
+        return template.replace(CODE_PLACEHOLDER, code).replace(TTL_PLACEHOLDER, Long.toString(ttlMinutes));
     }
 }

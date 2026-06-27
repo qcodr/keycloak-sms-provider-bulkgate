@@ -4,13 +4,13 @@
 .DEFAULT_GOAL := help
 GRADLE := ./gradlew
 
-.PHONY: help build jar test e2e verify up down clean
+.PHONY: help build jar test e2e verify format check up down clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-build: ## Compile, run unit/integration tests, build the provider jar
+build: ## Compile, lint, static-analyse, test, build the provider jar
 	$(GRADLE) clean build
 
 jar: ## Build only the provider jar (build/libs/*.jar)
@@ -18,6 +18,12 @@ jar: ## Build only the provider jar (build/libs/*.jar)
 
 test: ## Run fast unit + WireMock integration tests (no Docker)
 	$(GRADLE) test
+
+format: ## Auto-format the code (Spotless / palantir-java-format)
+	$(GRADLE) spotlessApply
+
+check: ## Lint + static analysis + tests (Spotless, Error Prone, SpotBugs/FindSecBugs)
+	$(GRADLE) check
 
 e2e: ## Run Docker-backed end-to-end tests (Keycloak + mocked BulkGate)
 	$(GRADLE) e2eTest

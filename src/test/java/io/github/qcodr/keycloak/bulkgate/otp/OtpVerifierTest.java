@@ -3,12 +3,11 @@
  */
 package io.github.qcodr.keycloak.bulkgate.otp;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class OtpVerifierTest {
 
@@ -26,46 +25,40 @@ class OtpVerifierTest {
     void returnsValidWhenCodeMatchesAndFresh() {
         OtpChallenge challenge = challengeFor("123456", NOW.plus(Duration.ofMinutes(5)), 0);
 
-        assertThat(verifier.verify(challenge, "123456", NOW, 3))
-                .isEqualTo(OtpVerificationResult.VALID);
+        assertThat(verifier.verify(challenge, "123456", NOW, 3)).isEqualTo(OtpVerificationResult.VALID);
     }
 
     @Test
     void returnsInvalidWhenCodeDoesNotMatch() {
         OtpChallenge challenge = challengeFor("123456", NOW.plus(Duration.ofMinutes(5)), 0);
 
-        assertThat(verifier.verify(challenge, "000000", NOW, 3))
-                .isEqualTo(OtpVerificationResult.INVALID);
+        assertThat(verifier.verify(challenge, "000000", NOW, 3)).isEqualTo(OtpVerificationResult.INVALID);
     }
 
     @Test
     void returnsExpiredWhenTtlElapsedEvenIfCodeMatches() {
         OtpChallenge challenge = challengeFor("123456", NOW.minusSeconds(1), 0);
 
-        assertThat(verifier.verify(challenge, "123456", NOW, 3))
-                .isEqualTo(OtpVerificationResult.EXPIRED);
+        assertThat(verifier.verify(challenge, "123456", NOW, 3)).isEqualTo(OtpVerificationResult.EXPIRED);
     }
 
     @Test
     void returnsTooManyAttemptsWhenBudgetExhausted() {
         OtpChallenge challenge = challengeFor("123456", NOW.plus(Duration.ofMinutes(5)), 3);
 
-        assertThat(verifier.verify(challenge, "123456", NOW, 3))
-                .isEqualTo(OtpVerificationResult.TOO_MANY_ATTEMPTS);
+        assertThat(verifier.verify(challenge, "123456", NOW, 3)).isEqualTo(OtpVerificationResult.TOO_MANY_ATTEMPTS);
     }
 
     @Test
     void returnsNoChallengeWhenNull() {
-        assertThat(verifier.verify(null, "123456", NOW, 3))
-                .isEqualTo(OtpVerificationResult.NO_CHALLENGE);
+        assertThat(verifier.verify(null, "123456", NOW, 3)).isEqualTo(OtpVerificationResult.NO_CHALLENGE);
     }
 
     @Test
     void returnsInvalidWhenSubmittedCodeIsNull() {
         OtpChallenge challenge = challengeFor("123456", NOW.plus(Duration.ofMinutes(5)), 0);
 
-        assertThat(verifier.verify(challenge, null, NOW, 3))
-                .isEqualTo(OtpVerificationResult.INVALID);
+        assertThat(verifier.verify(challenge, null, NOW, 3)).isEqualTo(OtpVerificationResult.INVALID);
     }
 
     @Test
@@ -73,7 +66,6 @@ class OtpVerifierTest {
         // Expired AND out of attempts -> expiry wins (checked first).
         OtpChallenge challenge = challengeFor("123456", NOW.minusSeconds(1), 99);
 
-        assertThat(verifier.verify(challenge, "123456", NOW, 3))
-                .isEqualTo(OtpVerificationResult.EXPIRED);
+        assertThat(verifier.verify(challenge, "123456", NOW, 3)).isEqualTo(OtpVerificationResult.EXPIRED);
     }
 }

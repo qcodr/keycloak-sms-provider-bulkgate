@@ -137,11 +137,18 @@ needed — the Gradle wrapper is bundled. A `Makefile` wraps the common tasks:
 ```bash
 make            # list all targets
 make jar        # build the provider jar  → build/libs/*.jar
-make build      # compile + unit/integration tests + jar
+make build      # compile + lint + static analysis + tests + jar
 make test       # fast unit + WireMock tests (no Docker)
 make e2e        # Docker-backed end-to-end tests
+make format     # auto-format (Spotless / palantir-java-format)
+make check      # lint + static analysis + tests
 make up / down  # start / stop the local demo stack
 ```
+
+Code quality is enforced on `build`/`check` and in CI: **Spotless**
+(palantir-java-format), **Error Prone** (compile-time bug patterns), and
+**SpotBugs + FindSecBugs** (bug + security analysis). See
+[.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 `make jar` is equivalent to `./gradlew shadowJar`. The jar bundles only
 libphonenumber; all Keycloak/Jackson classes are provided by the server at

@@ -8,7 +8,6 @@ import io.github.qcodr.keycloak.bulkgate.config.SmsAuthenticatorConfig;
 import io.github.qcodr.keycloak.bulkgate.gateway.BulkGateSmsGateway;
 import io.github.qcodr.keycloak.bulkgate.gateway.SimulationSmsGateway;
 import io.github.qcodr.keycloak.bulkgate.gateway.SmsGateway;
-
 import java.net.http.HttpClient;
 import java.time.Duration;
 

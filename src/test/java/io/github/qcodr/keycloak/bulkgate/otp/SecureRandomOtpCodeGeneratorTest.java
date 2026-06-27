@@ -3,11 +3,11 @@
  */
 package io.github.qcodr.keycloak.bulkgate.otp;
 
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 class SecureRandomOtpCodeGeneratorTest {
 
@@ -28,7 +28,6 @@ class SecureRandomOtpCodeGeneratorTest {
 
     @Test
     void rejectsNonPositiveLength() {
-        assertThatThrownBy(() -> generator.generate(0))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> generator.generate(0)).isInstanceOf(IllegalArgumentException.class);
     }
 }

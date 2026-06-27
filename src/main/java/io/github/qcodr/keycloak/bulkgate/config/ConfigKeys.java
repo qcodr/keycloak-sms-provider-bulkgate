@@ -11,8 +11,7 @@ package io.github.qcodr.keycloak.bulkgate.config;
  */
 public final class ConfigKeys {
 
-    private ConfigKeys() {
-    }
+    private ConfigKeys() {}
 
     // --- OTP behaviour ------------------------------------------------------
     public static final String CODE_LENGTH = "codeLength";

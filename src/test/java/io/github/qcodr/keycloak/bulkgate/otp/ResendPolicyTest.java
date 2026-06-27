@@ -3,12 +3,11 @@
  */
 package io.github.qcodr.keycloak.bulkgate.otp;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ResendPolicyTest {
 
@@ -23,8 +22,7 @@ class ResendPolicyTest {
     void allowsAfterCooldownAndUnderLimit() {
         OtpChallenge challenge = challengeWithResends(1);
 
-        ResendPolicy.Decision decision =
-                ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(30));
+        ResendPolicy.Decision decision = ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(30));
 
         assertThat(decision).isEqualTo(ResendPolicy.Decision.ALLOWED);
     }
@@ -33,8 +31,7 @@ class ResendPolicyTest {
     void blocksDuringCooldown() {
         OtpChallenge challenge = challengeWithResends(1);
 
-        ResendPolicy.Decision decision =
-                ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(29));
+        ResendPolicy.Decision decision = ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(29));
 
         assertThat(decision).isEqualTo(ResendPolicy.Decision.COOLDOWN);
     }
@@ -43,8 +40,7 @@ class ResendPolicyTest {
     void blocksWhenResendLimitReached() {
         OtpChallenge challenge = challengeWithResends(3);
 
-        ResendPolicy.Decision decision =
-                ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(120));
+        ResendPolicy.Decision decision = ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(120));
 
         assertThat(decision).isEqualTo(ResendPolicy.Decision.LIMIT_REACHED);
     }
@@ -53,8 +49,7 @@ class ResendPolicyTest {
     void limitTakesPrecedenceOverCooldown() {
         OtpChallenge challenge = challengeWithResends(3);
 
-        ResendPolicy.Decision decision =
-                ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(1));
+        ResendPolicy.Decision decision = ResendPolicy.evaluate(challenge, 3, COOLDOWN, SENT_AT.plusSeconds(1));
 
         assertThat(decision).isEqualTo(ResendPolicy.Decision.LIMIT_REACHED);
     }

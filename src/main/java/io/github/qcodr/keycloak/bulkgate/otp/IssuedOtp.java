@@ -8,5 +8,4 @@ package io.github.qcodr.keycloak.bulkgate.otp;
  * storage) and the plaintext {@link OtpCode} (transient, for the SMS). Returning
  * both together keeps the plaintext from ever needing to be re-derived.
  */
-public record IssuedOtp(OtpChallenge challenge, OtpCode plaintext) {
-}
+public record IssuedOtp(OtpChallenge challenge, OtpCode plaintext) {}

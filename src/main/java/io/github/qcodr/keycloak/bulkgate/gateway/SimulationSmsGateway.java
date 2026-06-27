@@ -19,8 +19,7 @@ public class SimulationSmsGateway implements SmsGateway {
         // The code is logged on purpose so the flow can be completed without a real
         // SMS. This is a development aid only: simulation mode must never be enabled
         // in production, where it would write every OTP to the server log.
-        LOG.warnf("[SIMULATION — DO NOT USE IN PRODUCTION] SMS to %s: %s",
-                message.recipient(), message.text());
+        LOG.warnf("[SIMULATION — DO NOT USE IN PRODUCTION] SMS to %s: %s", message.recipient(), message.text());
         return SmsSendResult.accepted("simulated");
     }
 }

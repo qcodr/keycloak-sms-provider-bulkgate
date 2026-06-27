@@ -4,6 +4,7 @@
 package io.github.qcodr.keycloak.bulkgate.authenticator;
 
 import io.github.qcodr.keycloak.bulkgate.config.ConfigProperties;
+import java.util.List;
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
@@ -11,8 +12,6 @@ import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
-
-import java.util.List;
 
 /**
  * Registers the {@link SmsOtpAuthenticator} with Keycloak and declares its
@@ -26,9 +25,7 @@ public class SmsOtpAuthenticatorFactory implements AuthenticatorFactory {
     private static final SmsOtpAuthenticator INSTANCE = new SmsOtpAuthenticator();
 
     private static final Requirement[] REQUIREMENT_CHOICES = {
-            Requirement.REQUIRED,
-            Requirement.ALTERNATIVE,
-            Requirement.DISABLED
+        Requirement.REQUIRED, Requirement.ALTERNATIVE, Requirement.DISABLED
     };
 
     @Override
@@ -58,7 +55,7 @@ public class SmsOtpAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public Requirement[] getRequirementChoices() {
-        return REQUIREMENT_CHOICES;
+        return REQUIREMENT_CHOICES.clone();
     }
 
     @Override
@@ -78,14 +75,11 @@ public class SmsOtpAuthenticatorFactory implements AuthenticatorFactory {
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
+    public void init(Config.Scope config) {}
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-    }
+    public void postInit(KeycloakSessionFactory factory) {}
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 }

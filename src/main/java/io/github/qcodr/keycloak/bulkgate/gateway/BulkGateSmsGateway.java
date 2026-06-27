@@ -6,7 +6,6 @@ package io.github.qcodr.keycloak.bulkgate.gateway;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -34,8 +33,8 @@ public class BulkGateSmsGateway implements SmsGateway {
     private final BulkGateSettings settings;
     private final Duration requestTimeout;
 
-    public BulkGateSmsGateway(HttpClient httpClient, ObjectMapper mapper,
-                              BulkGateSettings settings, Duration requestTimeout) {
+    public BulkGateSmsGateway(
+            HttpClient httpClient, ObjectMapper mapper, BulkGateSettings settings, Duration requestTimeout) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.settings = settings;
@@ -99,10 +98,10 @@ public class BulkGateSmsGateway implements SmsGateway {
                 return SmsSendResult.accepted(data.path("sms_id").asText(null));
             }
             if (root.has("error")) {
-                return SmsSendResult.rejected(errorCode(root, status), root.path("error").asText());
+                return SmsSendResult.rejected(
+                        errorCode(root, status), root.path("error").asText());
             }
-            throw new SmsGatewayException(
-                    "Unexpected BulkGate success payload (status='" + reportedStatus + "')");
+            throw new SmsGatewayException("Unexpected BulkGate success payload (status='" + reportedStatus + "')");
         }
         return SmsSendResult.rejected(errorCode(root, status), errorMessage(root, response.body()));
     }
@@ -144,9 +143,7 @@ public class BulkGateSmsGateway implements SmsGateway {
         }
         // Cap an unstructured body so a misconfigured endpoint can't flood the log
         // (or echo request fragments back into it).
-        return rawBody.length() <= MAX_ERROR_BODY_CHARS
-                ? rawBody
-                : rawBody.substring(0, MAX_ERROR_BODY_CHARS) + "…";
+        return rawBody.length() <= MAX_ERROR_BODY_CHARS ? rawBody : rawBody.substring(0, MAX_ERROR_BODY_CHARS) + "…";
     }
 
     private static String numberForApi(String recipient) {
