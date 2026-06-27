@@ -81,6 +81,7 @@
       "emailVerified": true,
       "firstName": "Alice",
       "lastName": "Demo",
+      "realmRoles": ["default-roles-bulkgate-demo"],
       "attributes": {
         "mobile_number": ["+36201234567"]
       },
