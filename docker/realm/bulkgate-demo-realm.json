@@ -1,0 +1,96 @@
+{
+  "realm": "bulkgate-demo",
+  "enabled": true,
+  "sslRequired": "none",
+  "loginWithEmailAllowed": true,
+  "browserFlow": "bulkgate-browser",
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "config": {
+          "kc.user.profile.config": [
+            "{\"unmanagedAttributePolicy\":\"ENABLED\"}"
+          ]
+        }
+      }
+    ]
+  },
+  "authenticationFlows": [
+    {
+      "alias": "bulkgate-browser",
+      "description": "Username + password, then a BulkGate SMS one-time code.",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "bulkgate-sms-otp-authenticator",
+          "authenticatorConfig": "bulkgate-demo-config",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "bulkgate-demo-config",
+      "config": {
+        "bulkgateApiUrl": "http://wiremock:8080/api/1.0/advanced/transactional",
+        "simulationMode": "false",
+        "bulkgateApplicationId": "demo-app",
+        "bulkgateApplicationToken": "demo-token",
+        "bulkgateSenderId": "gText",
+        "bulkgateSenderIdValue": "Keycloak",
+        "codeLength": "6",
+        "codeTtlSeconds": "300",
+        "maxVerifyAttempts": "3",
+        "resendCooldownSeconds": "30",
+        "maxResends": "3",
+        "phoneNumberAttribute": "mobile_number",
+        "defaultCountryCode": "+36"
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "demo-client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "alice@example.com",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Demo",
+      "attributes": {
+        "mobile_number": ["+36201234567"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

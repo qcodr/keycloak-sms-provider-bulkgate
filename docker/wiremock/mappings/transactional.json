@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/1.0/advanced/transactional"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "data": {
+        "status": "accepted",
+        "sms_id": "demo-message-1"
+      }
+    }
+  }
+}

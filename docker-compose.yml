@@ -1,0 +1,42 @@
+# Local demo stack: Keycloak 26.6.3 with the BulkGate SMS OTP provider, and a
+# WireMock standing in for the BulkGate Advanced Transactional API.
+#
+# Usage:
+#   ./gradlew shadowJar          # build the provider jar into build/libs/
+#   docker compose up            # start Keycloak + mocked BulkGate
+#
+# Then open http://localhost:8080/ , and log in to the "bulkgate-demo" realm as
+# alice / password. Read the OTP that was "sent" from the WireMock journal:
+#   curl -s localhost:8081/__admin/requests | jq -r '.requests[0].request.body'
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.2
+    command: ["--verbose"]
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./docker/wiremock/mappings:/home/wiremock/mappings:ro
+    networks:
+      - bulkgate
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.3
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      # The provider jar (run ./gradlew shadowJar first).
+      - ./build/libs:/opt/keycloak/providers:ro
+      # Realm imported on first start.
+      - ./docker/realm:/opt/keycloak/data/import:ro
+    depends_on:
+      - wiremock
+    networks:
+      - bulkgate
+
+networks:
+  bulkgate:

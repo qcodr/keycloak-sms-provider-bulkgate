@@ -1,0 +1,16 @@
+Keycloak BulkGate SMS OTP authenticator
+Copyright 2026 qcodr and contributors
+
+This product includes software derived from
+netzbegruenung/keycloak-mfa-plugins (https://github.com/netzbegruenung/keycloak-mfa-plugins),
+Copyright Netzbegruenung e.V., verdigado eG, Niko Köbler, and Red Hat, Inc.,
+licensed under the Apache License, Version 2.0.
+
+The structure of the SMS authenticator (authenticator/required-action SPI
+layout, FreeMarker form approach, and gateway abstraction) was used as a
+reference; the BulkGate integration, OTP domain model, phone normalization,
+configuration handling, and tests in this project are original work.
+
+This product includes Google libphonenumber
+(https://github.com/google/libphonenumber), licensed under the Apache License,
+Version 2.0.
