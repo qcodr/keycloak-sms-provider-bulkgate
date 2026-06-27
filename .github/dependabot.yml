@@ -1,0 +1,51 @@
+version: 2
+updates:
+  # Gradle dependencies (build.gradle.kts + version properties in gradle.properties).
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      keycloak:
+        patterns:
+          - "org.keycloak:*"
+      test-and-analysis:
+        patterns:
+          - "org.junit*"
+          - "org.mockito*"
+          - "org.assertj*"
+          - "org.wiremock*"
+          - "org.testcontainers*"
+          - "com.github.dasniko*"
+          - "org.htmlunit*"
+          - "org.slf4j*"
+          - "com.google.errorprone*"
+          - "com.h3xstream.findsecbugs*"
+
+  # GitHub Actions used by the CI / release workflows.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # Container images (docker-compose.yml: Keycloak + WireMock).
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "chore(docker)"

@@ -1,5 +1,11 @@
 # Keycloak BulkGate SMS OTP authenticator
 
+[![CI](https://github.com/qcodr/keycloak-sms-provider-bulkgate/actions/workflows/ci.yml/badge.svg)](https://github.com/qcodr/keycloak-sms-provider-bulkgate/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/qcodr/keycloak-sms-provider-bulkgate?sort=semver)](https://github.com/qcodr/keycloak-sms-provider-bulkgate/releases)
+[![License](https://img.shields.io/github/license/qcodr/keycloak-sms-provider-bulkgate)](LICENSE)
+![Keycloak](https://img.shields.io/badge/Keycloak-26.6.3-4d4d4d?logo=keycloak)
+![Java](https://img.shields.io/badge/Java-21-ea2d2e?logo=openjdk)
+
 A Keycloak authenticator that sends a one-time code by SMS through
 [BulkGate](https://www.bulkgate.com/) and verifies it. Works with **Keycloak
 26.6.3**.
