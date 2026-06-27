@@ -3,7 +3,7 @@ import net.ltgt.gradle.errorprone.errorprone
 plugins {
     `java-library`
     jacoco
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "9.4.3"
     id("com.diffplug.spotless") version "8.7.0"
     id("net.ltgt.errorprone") version "4.1.0"
     id("com.github.spotbugs") version "6.0.26"
